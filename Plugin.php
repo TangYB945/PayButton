@@ -11,7 +11,6 @@
 $owo = json_decode(@file_get_contents(Helper::options()->pluginUrl . '/PayButton/static/owo.json'), true);
 define("TONM_NAME", $owo['name']);
 define("TONM_VERSION", $owo['version']);
-$jsdelivr=$owo[jsdelivr];
 class PayButton_Plugin implements Typecho_Plugin_Interface
 {
     public static function activate()
@@ -28,7 +27,6 @@ class PayButton_Plugin implements Typecho_Plugin_Interface
     
     public static function config(Typecho_Widget_Helper_Form $form)
     {
-    	$owo = json_decode(@file_get_contents(Helper::options()->pluginUrl . '/PayButton/static/owo.json'), true);
       	echo ('<style>.typecho-page-main a{background-color:#4F94CD;color:#FFFFFF;padding:2px 6px;border-radius:3px;line-height:15px;display:inline-block}.typecho-page-main a:hover{color:red}</style>');
 		$obtain=Helper::options()->pluginUrl . '/PayButton/static/obtain.min.js';
 		echo '<script type="text/javascript" src="//cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>';
@@ -37,7 +35,7 @@ class PayButton_Plugin implements Typecho_Plugin_Interface
 		$new_verison= '<span id="verison"></span>';
 		$new_notice= '<span id="notice"></span>';
         $public_section = new Typecho_Widget_Helper_Layout('div', array('class=' => 'typecho-page-title'));
-        $public_section->html('<h4>本插件目前版本：'.$owo['version'].' | 最新版本：'. $new_verison.'（'.$new_notice.'）</h4>');
+        $public_section->html('<h4>本插件目前版本：'.TONM_VERSION.' | 最新版本：'. $new_verison.'（'.$new_notice.'）</h4>');
         $form->addItem($public_section);
         $jquery = new Typecho_Widget_Helper_Form_Element_Radio('jquery',
             ['0' => _t('不加载'), '1' => _t('加载')],
@@ -76,6 +74,7 @@ class PayButton_Plugin implements Typecho_Plugin_Interface
     public static function render(){}
 
     public static function button(){
+    	$owo = json_decode(@file_get_contents(Helper::options()->pluginUrl . '/PayButton/static/owo.json'), true);
     	$theme = Typecho_Widget::widget('Widget_Options') -> Plugin('PayButton') -> theme;
     	$felurl = Typecho_Widget::widget('Widget_Options') -> Plugin('PayButton') -> felurl;
     	$alifelname = Typecho_Widget::widget('Widget_Options') -> Plugin('PayButton') -> alifelname;
@@ -116,7 +115,7 @@ class PayButton_Plugin implements Typecho_Plugin_Interface
     	echo '<!-- 感谢使用本插件 -->';
         echo '
 			<button style="background-color:'.$theme.'" onclick="datonmToggle();return false;" class="article-pay-btn tonm-btn tonm-btn-raised tonm-btn-dense '.$tClor.'" title="打赏，支持一下">
-				<img class="banimg" src="'.Helper::options()->pluginUrl.'/PayButton/reward/'.$dlClo.'">
+				<img class="banimg" src="'.$cdnurl_r.''.$dlClo.'">
 				<span>打 赏</span>
 			</button>
 			<div class="hide_box"></div>
@@ -165,7 +164,7 @@ class PayButton_Plugin implements Typecho_Plugin_Interface
     public static function header()
     {
     	$cdnurl= Typecho_Widget::widget('Widget_Options')->plugin('PayButton')->cdnurl;
-        if ($pendant!="0") {
+        if ($cdnurl!="0") {
         	$cdnurl_s = Helper::options()->pluginUrl.'/PayButton/static/';
         }else{
         	$cdnurl_s = 'https://cdn.jsdelivr.net/gh/TangYB945/PayButton@'.TONM_VERSION.'/static/';
@@ -181,7 +180,7 @@ class PayButton_Plugin implements Typecho_Plugin_Interface
     public static function footer()
     {
     	$cdnurl= Typecho_Widget::widget('Widget_Options')->plugin('PayButton')->cdnurl;
-        if ($pendant!="0") {
+        if ($cdnurl!="0") {
         	$cdnurl_s = Helper::options()->pluginUrl.'/PayButton/static/';
         }else{
         	$cdnurl_s = 'https://cdn.jsdelivr.net/gh/TangYB945/PayButton@'.TONM_VERSION.'/static/';
