@@ -4,10 +4,14 @@
  * 添加打赏按钮 
  * @package PayButton
  * @author Tonm
- * @version 1.0.3
+ * @version 1.0.4
  * @link https://owo-bo.cn/
  * 
  */
+$owo = json_decode(@file_get_contents(Helper::options()->pluginUrl . '/PayButton/static/owo.json'), true);
+define("TONM_NAME", $owo['name']);
+define("TONM_VERSION", $owo['version']);
+$jsdelivr=$owo[jsdelivr];
 class PayButton_Plugin implements Typecho_Plugin_Interface
 {
     public static function activate()
@@ -26,34 +30,23 @@ class PayButton_Plugin implements Typecho_Plugin_Interface
     {
     	$owo = json_decode(@file_get_contents(Helper::options()->pluginUrl . '/PayButton/static/owo.json'), true);
       	echo ('<style>.typecho-page-main a{background-color:#4F94CD;color:#FFFFFF;padding:2px 6px;border-radius:3px;line-height:15px;display:inline-block}.typecho-page-main a:hover{color:red}</style>');
-		$version = $owo['version']; 
-		$up = json_decode(@file_get_contents(''.$owo['url'].''), true);
-      	$arr = json_decode(@file_get_contents(''.$up['url'].''.$up['bo'].''), true);
-		if(empty($arr['tag_name'])){
-			$new_version = '获取失败！';
-		}else{
-			$new_version = $arr['tag_name'];
-		}
-      	if($new_version == '获取失败！'){
-			$version_tips = '获取失败！请自行前往<a href="'.$arr['browser_download_url'].'" target="_blank">OwO-Bo.CN</a>获取详情！';
-			$new_version_out = '<font color="#ee9922">获取失败！</font>';
-		}else if($version < $new_version) {
-        	$version_tips = '该插件有<font color="#ee9922">新版本</font> => <a href="'.$arr['browser_download_url'].'" target="_blank">点击下载</a>';
-			$new_version_out = '<font color="#ee9922">'.$new_version.'</font>';
-		}else if($version > $new_version){
-            $version_tips = '怎么怎么肥四，版本号比官方还高啦！请检联系管理员呀！'.$arr['tips_notice'].'';
-          	$new_version_out = '<font color="#ee9922">'.$new_version.'</font>';
-        }else if($version == $new_version){
-			$version_tips = '您的插件为<font color="#ee9922">最新版本</font>，无需更新！'.$arr['tips_notice'].'';
-          	$new_version_out = $new_version;
-		}
+		$obtain=Helper::options()->pluginUrl . '/PayButton/static/obtain.min.js';
+		echo '<script type="text/javascript" src="//cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>';
+		echo '<script type="text/javascript" src="'.$obtain.'"></script>';
+		echo '<div id="data" data-update="'.base64_encode('theme='.TONM_NAME.'&version='.TONM_VERSION).'"></div>';
+		$new_verison= '<span id="verison"></span>';
+		$new_notice= '<span id="notice"></span>';
         $public_section = new Typecho_Widget_Helper_Layout('div', array('class=' => 'typecho-page-title'));
-        $public_section->html('<h4>本插件目前版本：'.$version.' | 最新版本：'.$new_version_out.'（'.$version_tips.'）</h4>');
+        $public_section->html('<h4>本插件目前版本：'.$owo['version'].' | 最新版本：'. $new_verison.'（'.$new_notice.'）</h4>');
         $form->addItem($public_section);
         $jquery = new Typecho_Widget_Helper_Form_Element_Radio('jquery',
             ['0' => _t('不加载'), '1' => _t('加载')],
             '0', _t('是否加载外部jQuery库'), _t('插件需要jQuery库文件的支持，如果已加载就不需要加载辽'));
         $form->addInput($jquery);
+        $cdnurl=new Typecho_Widget_Helper_Form_Element_Radio('cdnurl',
+            ['0' => _t('jsdelivr'), '1' => _t('local')],
+            '0', _t('静态文件源'), _t('默认为 “JsDelivr源”'));
+    	$form->addInput($cdnurl);
         $felurl = new Typecho_Widget_Helper_Form_Element_Text('felurl', null, 'https://owo-bo.cn/pic/MainImg/PayButton/', _t('二维码外链地址'), '请填写二维码的外链地址呀！（eg：填到当前文件所在目录即可，链接末尾一定不要忘记反斜杠“/”呀）');
         $form->addInput($felurl);
         $alifelname = new Typecho_Widget_Helper_Form_Element_Text('alifelname', null, 'ali.png', _t('支付宝二维码名称'), '请填写支付宝二维码图片的名称呀！（eg：支付宝二维码名称是ali.png，直接填上即可）');
@@ -83,7 +76,6 @@ class PayButton_Plugin implements Typecho_Plugin_Interface
     public static function render(){}
 
     public static function button(){
-		$owo = json_decode(@file_get_contents(Helper::options()->pluginUrl . '/PayButton/static/owo.json'), true);
     	$theme = Typecho_Widget::widget('Widget_Options') -> Plugin('PayButton') -> theme;
     	$felurl = Typecho_Widget::widget('Widget_Options') -> Plugin('PayButton') -> felurl;
     	$alifelname = Typecho_Widget::widget('Widget_Options') -> Plugin('PayButton') -> alifelname;
@@ -113,30 +105,38 @@ class PayButton_Plugin implements Typecho_Plugin_Interface
         }else{
         	$pendant='';
         }
+        $cdnurl= Typecho_Widget::widget('Widget_Options')->plugin('PayButton')->cdnurl;
+        if ($cdnurl!="0") {
+        	$cdnurl_r = Helper::options()->pluginUrl.'/PayButton/reward/';
+        	$cdnurl_s = Helper::options()->pluginUrl.'/PayButton/static/';
+        }else{
+    		$cdnurl_r = 'https://cdn.jsdelivr.net/gh/TangYB945/PayButton@'.TONM_VERSION.'/reward/';
+        	$cdnurl_s = 'https://cdn.jsdelivr.net/gh/TangYB945/PayButton@'.TONM_VERSION.'/static/';
+        }
     	echo '<!-- 感谢使用本插件 -->';
         echo '
 			<button style="background-color:'.$theme.'" onclick="datonmToggle();return false;" class="article-pay-btn tonm-btn tonm-btn-raised tonm-btn-dense '.$tClor.'" title="打赏，支持一下">
-				<img src="'.Helper::options()->pluginUrl.'/PayButton/reward/'.$dlClo.'">
+				<img class="banimg" src="'.Helper::options()->pluginUrl.'/PayButton/reward/'.$dlClo.'">
 				<span>打 赏</span>
 			</button>
 			<div class="hide_box"></div>
 			<div class="tonm_box">
-				<a class="tonm_close" href="#" onclick="datonmToggle();return false;" title="关闭"><img src="'.Helper::options()->pluginUrl.'/PayButton/reward/close.jpg" alt="取消" /></a>
+				<a class="tonm_close" href="#" onclick="datonmToggle();return false;" title="关闭"><img class="banimg" src="'.$cdnurl_r.'close.jpg" alt="取消" /></a>
 				<div class="tonm_tit">
 					<p '.$moreClor.'>'.$onetxt.'</p>
 				</div>
 				<div class="tonm_payimg" style="border: 6px solid '.$theme.'">
-					<img src="'.$felurl.''.$alifelname.'" />
+					<img class="banimg" src="'.$felurl.''.$alifelname.'" />
 				</div>
 					<div class="pay_explain">'.$pendant.'扫码打赏<br>支付金额随意哦！</div>
 				<div class="tonm_payselect">
 					<div class="pay_item checked" data-id="'.$alisplionefelname.'">
 			    		<span class="radiobox"></span>
-			    		<span class="pay_logo"><img src="'.Helper::options()->pluginUrl.'/PayButton/reward/alipay.jpg" alt="支付宝" /></span>
+			    		<span class="pay_logo"><img class="banimg" src="'.$cdnurl_r.'alipay.jpg" alt="支付宝" /></span>
 					</div>
 					<div class="pay_item" data-id="'.$weisplionefelname.'">
 			    		<span class="radiobox"></span>
-			    		<span class="pay_logo"><img src="'.Helper::options()->pluginUrl.'/PayButton/reward/wechat.jpg" alt="微信" /></span>
+			    		<span class="pay_logo"><img class="banimg" src="'.$cdnurl_r.'wechat.jpg" alt="微信" /></span>
 					</div>
 				</div>
 				<div class="tonm_info">
@@ -158,13 +158,19 @@ class PayButton_Plugin implements Typecho_Plugin_Interface
 					$("#tonm_pay_txt").text(dataid=="'.$alisplionefelname.'"?"支付宝":"微信");
 				});
 			});
-			$(document).on("pjax:complete",function(){clatest();colorize()});
+			$(document).on("pjax:complete",function(){banimg();clatest();colorize();});
 		</script>';
     }
     
     public static function header()
     {
-     	$cssUrl = Helper::options()->pluginUrl . '/PayButton/static/paybtn.min.css';
+    	$cdnurl= Typecho_Widget::widget('Widget_Options')->plugin('PayButton')->cdnurl;
+        if ($pendant!="0") {
+        	$cdnurl_s = Helper::options()->pluginUrl.'/PayButton/static/';
+        }else{
+        	$cdnurl_s = 'https://cdn.jsdelivr.net/gh/TangYB945/PayButton@'.TONM_VERSION.'/static/';
+        }
+     	$cssUrl =  $cdnurl_s.'paybtn.min.css';
             echo '<link rel="stylesheet" href="'.$cssUrl.'">';
         $jquery = Helper::options()->plugin('PayButton')->jquery;
         if($jquery) {
@@ -174,7 +180,13 @@ class PayButton_Plugin implements Typecho_Plugin_Interface
     
     public static function footer()
     {
-        $jsUrl = Helper::options()->pluginUrl . '/PayButton/static/pay.js';
+    	$cdnurl= Typecho_Widget::widget('Widget_Options')->plugin('PayButton')->cdnurl;
+        if ($pendant!="0") {
+        	$cdnurl_s = Helper::options()->pluginUrl.'/PayButton/static/';
+        }else{
+        	$cdnurl_s = 'https://cdn.jsdelivr.net/gh/TangYB945/PayButton@'.TONM_VERSION.'/static/';
+        }
+        $jsUrl = $cdnurl_s.'pay.min.js';
         printf("<script type='text/javascript' src='%s'></script>\n", $jsUrl);
 	}
 }
