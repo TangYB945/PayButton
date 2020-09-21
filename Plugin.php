@@ -4,13 +4,12 @@
  * 添加打赏按钮 
  * @package PayButton
  * @author Tonm
- * @version 1.0.4
+ * @version 1.0.5
  * @link https://owo-bo.cn/
  * 
  */
 $owo = json_decode(@file_get_contents(Helper::options()->pluginUrl . '/PayButton/static/owo.json'), true);
-define("TONM_NAME", $owo['name']);
-define("TONM_VERSION", $owo['version']);
+define("TONM_NAME", $owo['name']);define("TONM_VERSION", $owo['version']);define("TONM_URL", $owo['url']);define("TONM_STATIC", $owo['static']);define("TONM_REWARD", $owo['reward']);
 class PayButton_Plugin implements Typecho_Plugin_Interface
 {
     public static function activate()
@@ -55,6 +54,14 @@ class PayButton_Plugin implements Typecho_Plugin_Interface
             ['0' => _t('关闭'), '1' => _t('开启')],
             '0', _t('2233娘'), _t('2233娘呼唤你啦！'));
         $form->addInput($pendant);
+        
+        
+        $Sakura = new Typecho_Widget_Helper_Form_Element_Radio('Sakura',
+            ['0' => _t('关闭'), '1' => _t('开启')],
+            '0', _t('樱花飘呀飘'), _t('开启满屏樱花飘，不需要可以关闭呐！'));
+        $form->addInput($Sakura);
+        
+        
         $moreClor = new Typecho_Widget_Helper_Form_Element_Radio('moreClor',
             ['0' => _t('关闭'), '1' => _t('开启')],
             '0', _t('多彩文字'), _t('是否开启多彩一言？？？OwO'));
@@ -104,23 +111,32 @@ class PayButton_Plugin implements Typecho_Plugin_Interface
         }else{
         	$pendant='';
         }
+        $Sakura = Typecho_Widget::widget('Widget_Options')->plugin('PayButton')->Sakura;
+        if($Sakura!='0') {
+        	$Sakura_s='start();';
+        	$Sakura_e='end();';
+        }else{
+        	$Sakura_s='';
+        	$Sakura_e='';
+        }
         $cdnurl= Typecho_Widget::widget('Widget_Options')->plugin('PayButton')->cdnurl;
         if ($cdnurl!="0") {
         	$cdnurl_r = Helper::options()->pluginUrl.'/PayButton/reward/';
         	$cdnurl_s = Helper::options()->pluginUrl.'/PayButton/static/';
         }else{
-    		$cdnurl_r = 'https://cdn.jsdelivr.net/gh/TangYB945/PayButton@'.TONM_VERSION.'/reward/';
-        	$cdnurl_s = 'https://cdn.jsdelivr.net/gh/TangYB945/PayButton@'.TONM_VERSION.'/static/';
+    		$cdnurl_r = TONM_URL.TONM_VERSION.TONM_REWARD;
+        	$cdnurl_s = TONM_URL.TONM_VERSION.TONM_STATIC;
         }
+        
     	echo '<!-- 感谢使用本插件 -->';
         echo '
-			<button style="background-color:'.$theme.'" onclick="datonmToggle();return false;" class="article-pay-btn tonm-btn tonm-btn-raised tonm-btn-dense '.$tClor.'" title="打赏，支持一下">
+			<button style="background-color:'.$theme.'" onclick="datonmToggle();'.$Sakura_s.'return false;" class="article-pay-btn tonm-btn tonm-btn-raised tonm-btn-dense '.$tClor.'" title="打赏，支持一下">
 				<img class="banimg" src="'.$cdnurl_r.''.$dlClo.'">
 				<span>打 赏</span>
 			</button>
 			<div class="hide_box"></div>
 			<div class="tonm_box">
-				<a class="tonm_close" href="#" onclick="datonmToggle();return false;" title="关闭"><img class="banimg" src="'.$cdnurl_r.'close.jpg" alt="取消" /></a>
+				<a class="tonm_close" href="#" onclick="datonmToggle();'.$Sakura_e.'return false;" title="关闭"><img class="banimg" src="'.$cdnurl_r.'close.jpg" alt="取消" /></a>
 				<div class="tonm_tit">
 					<p '.$moreClor.'>'.$onetxt.'</p>
 				</div>
@@ -165,12 +181,15 @@ class PayButton_Plugin implements Typecho_Plugin_Interface
     {
     	$cdnurl= Typecho_Widget::widget('Widget_Options')->plugin('PayButton')->cdnurl;
         if ($cdnurl!="0") {
-        	$cdnurl_s = Helper::options()->pluginUrl.'/PayButton/static/';
+        	$cdnurl_r = Helper::options()->pluginUrl.'/PayButton/static/';
         }else{
-        	$cdnurl_s = 'https://cdn.jsdelivr.net/gh/TangYB945/PayButton@'.TONM_VERSION.'/static/';
+        	$cdnurl_r = TONM_URL.TONM_VERSION.TONM_STATIC;
         }
-     	$cssUrl =  $cdnurl_s.'paybtn.min.css';
-            echo '<link rel="stylesheet" href="'.$cssUrl.'">';
+        echo '<link rel="stylesheet" href="'.$cdnurl_r.'paybtn.min.css">';
+        $Sakura= Typecho_Widget::widget('Widget_Options')->plugin('PayButton')->Sakura;
+        if ($Sakura) {
+        	 echo '<script type="text/javascript" src="'.$cdnurl_r.'sakura.min.js"></script>';
+        }
         $jquery = Helper::options()->plugin('PayButton')->jquery;
         if($jquery) {
             echo '<script type="text/javascript" src="//cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>';
@@ -181,11 +200,10 @@ class PayButton_Plugin implements Typecho_Plugin_Interface
     {
     	$cdnurl= Typecho_Widget::widget('Widget_Options')->plugin('PayButton')->cdnurl;
         if ($cdnurl!="0") {
-        	$cdnurl_s = Helper::options()->pluginUrl.'/PayButton/static/';
+        	$cdnurl_r = Helper::options()->pluginUrl.'/PayButton/static/';
         }else{
-        	$cdnurl_s = 'https://cdn.jsdelivr.net/gh/TangYB945/PayButton@'.TONM_VERSION.'/static/';
+        	$cdnurl_r = TONM_URL.TONM_VERSION.TONM_STATIC;
         }
-        $jsUrl = $cdnurl_s.'pay.min.js';
-        printf("<script type='text/javascript' src='%s'></script>\n", $jsUrl);
+        echo '<script type="text/javascript" src="'.$cdnurl_r.'pay.min.js"></script>';
 	}
 }
