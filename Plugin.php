@@ -4,7 +4,7 @@
  * 添加打赏按钮 
  * @package PayButton
  * @author Tonm
- * @version 1.0.5
+ * @version 1.0.6
  * @link https://owo-bo.cn/
  * 
  */
