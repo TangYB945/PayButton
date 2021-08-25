@@ -4,12 +4,12 @@
  * 添加打赏按钮 
  * @package PayButton
  * @author Tonm
- * @version 1.0.6
+ * @version 1.0.7
  * @link https://owo-bo.cn/
  * 
  */
 $owo = json_decode(@file_get_contents(Helper::options()->pluginUrl . '/PayButton/static/owo.json'), true);
-define("TONM_NAME", $owo['name']);define("TONM_VERSION", $owo['version']);define("TONM_URL", $owo['url']);define("TONM_STATIC", $owo['static']);define("TONM_REWARD", $owo['reward']);
+define("TONM_NAME", $owo['name']);define("TONM_VERSION", "1.0.7");define("TONM_URL", $owo['url']);define("TONM_STATIC", $owo['static']);define("TONM_REWARD", $owo['reward']);
 class PayButton_Plugin implements Typecho_Plugin_Interface
 {
     public static function activate()
@@ -83,16 +83,12 @@ class PayButton_Plugin implements Typecho_Plugin_Interface
     	$alifelname = Typecho_Widget::widget('Widget_Options') -> Plugin('PayButton') -> alifelname;
     	$weifelname = Typecho_Widget::widget('Widget_Options') -> Plugin('PayButton') -> weifelname;
     	$onetxt = Typecho_Widget::widget('Widget_Options') -> Plugin('PayButton') -> onetxt;
-		$alisplionefelname = substr($alifelname,0,strrpos($alifelname ,"."));
-    	$alisplitowfelname = substr($alifelname,strripos($alifelname,".")+1);
-		$weisplionefelname = substr($weifelname,0,strrpos($weifelname ,"."));
-    	$weisplitowfelname = substr($weifelname,strripos($weifelname,".")+1);
     	$tClor = Typecho_Widget::widget('Widget_Options')->plugin('PayButton')->tClor;
         if($tClor!="0") {
-        	$tClor='tonm-btn-dim';
+        	$tClor='tonm-btn-dim tonm-shadow-b';
         	$dlClo='icon_dim.png';
         }else {
-        	$tClor='tonm-btn-light';
+        	$tClor='tonm-btn-light tonm-shadow-w';
         	$dlClo='icon_light.png';
         }
         $moreClor = Typecho_Widget::widget('Widget_Options')->plugin('PayButton')->moreClor;
@@ -140,11 +136,11 @@ class PayButton_Plugin implements Typecho_Plugin_Interface
 				</div>
 					<div class="pay_explain">'.$pendant.'扫码打赏<br>支付金额随意哦！</div>
 				<div class="tonm_payselect">
-					<div class="pay_item checked" data-id="'.$alisplionefelname.'">
+					<div class="pay_item checked" data-id="'.$alifelname.'">
 			    		<span class="radiobox"></span>
 			    		<span class="pay_logo"><img class="banimg" src="'.$cdnurl_r.'alipay.jpg" alt="支付宝" /></span>
 					</div>
-					<div class="pay_item" data-id="'.$weisplionefelname.'">
+					<div class="pay_item" data-id="'.$weifelname.'">
 			    		<span class="radiobox"></span>
 			    		<span class="pay_logo"><img class="banimg" src="'.$cdnurl_r.'wechat.jpg" alt="微信" /></span>
 					</div>
@@ -156,18 +152,12 @@ class PayButton_Plugin implements Typecho_Plugin_Interface
 		';
         echo '
         <script type="text/javascript">
-			$(function(){
-				$(".pay_item").click(function(){
-					$(this).addClass("checked").siblings(".pay_item").removeClass("checked");
-					var dataid=$(this).attr("data-id");
-					if ("'.$weisplitowfelname.'"=="'.$alisplitowfelname.'") {
-						$(".tonm_payimg img").attr("src","'.$felurl.'"+dataid+".png");
-					}else{
-						alert("呀！粗问题啦！请到后台检查两张图片扩展名是否一致！");
-					}
-					$("#tonm_pay_txt").text(dataid=="'.$alisplionefelname.'"?"支付宝":"微信");
-				});
-			});
+            $(document).on("click", ".pay_item", function(){
+                $(this).addClass("checked").siblings(".pay_item").removeClass("checked");
+                var dataid=$(this).attr("data-id");
+                $(".tonm_payimg img").attr("src","'.$felurl.'"+ dataid);
+                $("#tonm_pay_txt").text(dataid=="'.$alifelname.'"?"支付宝":"微信");
+            })
 			$(document).on("pjax:complete",function(){banimg();clatest();colorize();});
 		</script>';
     }
@@ -181,13 +171,9 @@ class PayButton_Plugin implements Typecho_Plugin_Interface
         	$cdnurl_r = TONM_URL.TONM_VERSION.TONM_STATIC;
         }
         echo '<link rel="stylesheet" href="'.$cdnurl_r.'paybtn.min.css">';
-        $Sakura= Typecho_Widget::widget('Widget_Options')->plugin('PayButton')->Sakura;
-        if ($Sakura) {
-        	 echo '<script type="text/javascript" src="'.$cdnurl_r.'sakura.min.js"></script>';
-        }
         $jquery = Helper::options()->plugin('PayButton')->jquery;
         if($jquery) {
-            echo '<script type="text/javascript" src="//cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>';
+            echo '<script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>';
         }
     }
     
@@ -200,5 +186,9 @@ class PayButton_Plugin implements Typecho_Plugin_Interface
         	$cdnurl_r = TONM_URL.TONM_VERSION.TONM_STATIC;
         }
         echo '<script type="text/javascript" src="'.$cdnurl_r.'pay.min.js"></script>';
+        $Sakura= Typecho_Widget::widget('Widget_Options')->plugin('PayButton')->Sakura;
+        if ($Sakura) {
+        	 echo '<script type="text/javascript" src="'.$cdnurl_r.'sakura.min.js"></script>';
+        }
 	}
 }
