@@ -1,4 +1,4 @@
-### Tonm式打赏插件`PayButton`
+### TONM-打赏插件`PayButton`
 
 ![GitHub](https://img.shields.io/github/license/TangYB945/PayButton?style=flat-square)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/TangYB945/PayButton?style=flat-square&color=lightgodenrod)
@@ -56,6 +56,11 @@
 - 修复部分主题二维码图片分辨率失调的问题
 - 修复悬停关闭按钮2233娘挂件浮动拉伸的问题
 - 修复樱花特效返回主页未关闭的问题
+
+2021.08.25 v1.0.7
+- 修复部分主题点击按钮无反应的问题
+- 优化当前二维码支持格式
+- 删除部分无效代码
 
 ### 联系作者
 - Email:`blog@owo-bo.cn`
