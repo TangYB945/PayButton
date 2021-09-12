@@ -4,12 +4,12 @@
  * 添加打赏按钮 
  * @package PayButton
  * @author Tonm
- * @version 1.0.7
+ * @version 1.0.8
  * @link https://owo-bo.cn/
  * 
  */
 $owo = json_decode(@file_get_contents(Helper::options()->pluginUrl . '/PayButton/static/owo.json'), true);
-define("TONM_NAME", $owo['name']);define("TONM_VERSION", "1.0.7");define("TONM_URL", $owo['url']);define("TONM_STATIC", $owo['static']);define("TONM_REWARD", $owo['reward']);
+define("TONM_NAME", $owo['name']);define("TONM_VERSION", "1.0.8");define("TONM_URL", $owo['url']);define("TONM_STATIC", $owo['static']);define("TONM_REWARD", $owo['reward']);
 class PayButton_Plugin implements Typecho_Plugin_Interface
 {
     public static function activate()
@@ -70,6 +70,15 @@ class PayButton_Plugin implements Typecho_Plugin_Interface
         $form->addInput($tClor);
         $theme = new Typecho_Widget_Helper_Form_Element_Text('theme', null, '#3498db', _t('按钮颜色'), '如果按钮没有颜色，请在这里填写十六进制颜色代码哦');
         $form->addInput($theme);
+        
+        $frame = new Typecho_Widget_Helper_Form_Element_Radio('frame',
+            ['0' => _t('虚线'), '1' => _t('实线')],
+            '0', _t('按钮周围边框线条'), _t('选择线条类型'));
+        $form->addInput($frame);
+        $position = new Typecho_Widget_Helper_Form_Element_Checkbox('position',
+            ['0' => _t('上'),'1' => _t('下'),'2' => _t('右'),'3' => _t('左')], ['0'],null,_t('边框线条显示位置')
+        );
+        $form->addInput($position); 
     }
     
     public static function personalConfig(Typecho_Widget_Helper_Form $form){}
@@ -119,8 +128,38 @@ class PayButton_Plugin implements Typecho_Plugin_Interface
     		$cdnurl_r = TONM_URL.TONM_VERSION.TONM_REWARD;
         	$cdnurl_s = TONM_URL.TONM_VERSION.TONM_STATIC;
         }
+        $frame = Typecho_Widget::widget('Widget_Options')->plugin('PayButton')->frame;
+        if($frame=='0'){
+            $frame="dashed";
+        }else{
+            $frame="solid";
+        }
+        $position = Typecho_Widget::widget('Widget_Options')->plugin('PayButton')->position;
+        if (is_array($position) ) {
+            $top="0";$right="0";$bottom="0";$left="0";
+            for ($i=0; $i <=3; $i++) { 
+                if (in_array($i, $position)){
+                    switch($i){
+                        case 0:
+                            $top ="1px";
+                            break; 
+                        case 1:
+                            $bottom ="1px";
+                            break;
+                        case 2:
+                            $right ="1px";
+                            break;
+                        case 3:
+                            $left ="1px";
+                            break;
+                    }                
+                }   
+            }
+            $pos="border-color:#797979;border-style:$frame;border-width: $top $right $bottom $left;";
+        }
     	echo '<!-- 感谢使用本插件 -->';
         echo '
+        <div class="article-btn" style="'.$pos.'">
 			<button style="background-color:'.$theme.'" onclick="datonmToggle();'.$Sakura_s.'return false;" class="article-pay-btn tonm-btn tonm-btn-raised tonm-btn-dense '.$tClor.'" title="打赏，支持一下">
 				<img class="banimg" src="'.$cdnurl_r.''.$dlClo.'">
 				<span>打 赏</span>
@@ -149,6 +188,7 @@ class PayButton_Plugin implements Typecho_Plugin_Interface
 					<p '.$moreClor.'>打开<span id="tonm_pay_txt">支付宝</span>扫一扫，即可进行扫码打赏哦</p>
 				</div>
 			</div>
+        </div>
 		';
         echo '
         <script type="text/javascript">
